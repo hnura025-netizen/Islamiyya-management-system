@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="ha">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Madrasatut Ta'alimun Nisa'i | Management System</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2e7d32">
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary-color: #25D366; --primary-dark: #128C7E;
+            --danger-color: #dc3545; --warning-color: #ffc107;
+            --success-color: #28a745; --info-color: #17a2b8;
+            --islamic-green: #2E7D32; --islamic-gold: #FFD700;
+            --sidebar-width: 280px;
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #1a472a 0%, #2e7d32 100%); overflow-x: hidden; min-height: 100vh; }
+        .sidebar { width: var(--sidebar-width); background: linear-gradient(180deg, #1a472a 0%, #0a2f1a 100%); color: white; position: fixed; height: 100vh; overflow-y: auto; box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 100; transition: transform 0.3s ease; }
+        .logo { padding: 25px; text-align: center; border-bottom: 2px solid var(--islamic-gold); margin-bottom: 20px; }
+        .school-logo { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--islamic-gold); object-fit: cover; background: white; margin-bottom: 10px; }
+        .logo h2 { font-size: 0.85em; font-weight: 600; line-height: 1.4; color: var(--islamic-gold); }
+        .nav-menu { display: flex; flex-direction: column; gap: 5px; padding: 0 15px; }
+        .nav-item { padding: 12px 20px; background: none; border: none; color: white; text-align: left; font-size: 0.95em; cursor: pointer; border-radius: 10px; transition: all 0.3s ease; display: flex; align-items: center; gap: 12px; width: 100%; }
+        .nav-item:hover { background: rgba(255,255,255,0.1); transform: translateX(5px); }
+        .nav-item.active { background: var(--islamic-gold); color: #1a472a; font-weight: bold; }
+        .main-content { margin-left: var(--sidebar-width); flex: 1; padding: 20px; transition: margin-left 0.3s ease; }
+        .header { background: white; padding: 20px 30px; border-radius: 15px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .header-title h1 { font-size: 1.5em; color: #1a472a; }
+        .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .page { display: none; animation: fadeIn 0.3s ease; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; color: #444; }
+        .form-control { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 1em; }
+        .btn-primary { background: var(--islamic-green); color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-secondary { background: #f0f0f0; color: #333; padding: 5px 12px; border: 1px solid #ccc; border-radius: 6px; cursor: pointer; font-size: 0.85em; }
+        .btn-bulk { background: var(--primary-color); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 10px; font-weight: bold; }
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: white; padding: 15px; border-radius: 15px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); transition: 0.3s; }
+        .stat-icon { width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3em; }
+        .stat-icon.parents { background: #e8f5e9; color: #2e7d32; }
+        .stat-icon.students { background: #e3f2fd; color: #1976d2; }
+        .history-item { padding: 12px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .paid-badge { color: var(--success-color); font-weight: bold; }
+        .unpaid-badge { color: var(--danger-color); font-weight: bold; }
+        .menu-toggle { display: none; position: fixed; top: 15px; left: 15px; z-index: 101; background: var(--islamic-green); color: white; border: none; padding: 10px; border-radius: 5px; }
+        .report-modal { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); z-index:200; width:90%; max-width:500px; background:white; padding:20px; border-radius:15px; box-shadow:0 0 20px rgba(0,0,0,0.3); border:2px solid var(--islamic-green); }
+        .report-list { max-height: 250px; overflow-y: auto; background: #f9f9f9; padding: 10px; border-radius: 8px; margin: 10px 0; font-size: 0.9em; }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .menu-toggle { display: block; }
+        }
+    </style>
+</head>
+<body>
+
+    <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+
+    <div class="sidebar" id="sidebar">
+        <div class="logo">
+            <img src="logo.png" alt="Logo" class="school-logo" onerror="this.src='logo.png'">
+            <h2>Madrasatut Ta'alimun Nisa'i<br>Daura</h2>
+        </div>
+        <nav class="nav-menu">
+            <button class="nav-item active" onclick="navigateTo('dashboard')"><i class="fas fa-th-large"></i> Dashboard</button>
+            <button class="nav-item" onclick="navigateTo('parents')"><i class="fas fa-users"></i> Iyaye & Yara</button>
+            <button class="nav-item" onclick="navigateTo('fee-management')"><i class="fas fa-wallet"></i> Biyan Kuɗi</button>
+            <button class="nav-item" onclick="navigateTo('send-message')"><i class="fab fa-whatsapp"></i> Aika Saƙo</button>
+            <button class="nav-item" onclick="navigateTo('settings')"><i class="fas fa-cog"></i> Saituna</button>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <div class="header-title">
+                <h1 id="current-page-title">Dashboard</h1>
+            </div>
+            <div id="badge-school-name" style="font-weight: bold; color: var(--islamic-green);">Makaranta</div>
+        </div>
+
+        <div id="dashboard-page" class="page active">
+            <button class="btn-bulk" style="background: var(--danger-color); margin-bottom: 20px;" onclick="showResetReport()">
+                <i class="fas fa-calendar-check"></i> Fara Sabon Wata (Reset)
+            </button>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon parents"><i class="fas fa-user-friends"></i></div>
+                    <div><h3 id="stat-parents">0</h3><p>Iyaye</p></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon students"><i class="fas fa-child"></i></div>
+                    <div><h3 id="stat-students">0</h3><p>Yara</p></div>
+                </div>
+                <div class="stat-card" onclick="navigateTo('fee-management')" style="cursor:pointer; border-bottom: 3px solid var(--primary-color);">
+                    <div class="stat-icon"><i class="fas fa-check-double" style="color:var(--primary-color)"></i></div>
+                    <div><h3 id="stat-paid">0/0</h3><p>Masu Biya</p></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-coins" style="color:var(--warning-color)"></i></div>
+                    <div><h3 id="stat-total-money">₦0</h3><p>Jimilla</p></div>
+                </div>
+            </div>
+            <div class="card">
+                <h3>Matsayin Biyan Kuɗi (Dashboard)</h3>
+                <div id="quick-payment-list"></div>
+            </div>
+        </div>
+
+        <div id="reset-modal" class="report-modal">
+            <h3 style="color: var(--danger-color);"><i class="fas fa-file-invoice"></i> Report din Watan Da Ya Wuce</h3>
+            <div id="reset-report-content" class="report-list"></div>
+            <div style="display:flex; gap:10px;">
+                <button class="btn-primary" style="flex:1" onclick="confirmStartNewMonth()">Tabbatar & Reset</button>
+                <button class="btn-secondary" style="flex:1" onclick="closeResetModal()">Soke</button>
+            </div>
+        </div>
+
+        <div id="parents-page" class="page">
+            <div class="card">
+                <h3>Ƙara Sabon Yaro</h3>
+                <form onsubmit="addChild(event)" id="child-form">
+                    <div class="form-group">
+                        <label>Zaɓi Iyaye</label>
+                        <select id="parent-select" class="form-control" onchange="toggleNewParentFields()"></select>
+                    </div>
+                    <div id="new-parent-fields">
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                            <div class="form-group"><label>Sunan Iyaye</label><input type="text" id="new-parent-name" class="form-control"></div>
+                            <div class="form-group"><label>Lambar Waya (WhatsApp)</label><input type="tel" id="new-parent-phone" class="form-control" placeholder="080..."></div>
+                        </div>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <div class="form-group"><label>Sunan Yaro</label><input type="text" id="student-name" class="form-control" required></div>
+                        <div class="form-group"><label>Aji</label><input type="text" id="class-name" class="form-control" placeholder="Aji 1"></div>
+                    </div>
+                    <button type="submit" class="btn-primary">Ajiye Bayani</button>
+                </form>
+            </div>
+            <div class="card">
+                <input type="text" id="search-input" class="form-control" placeholder="Nemo sunan iyaye ko yaro..." onkeyup="renderParentsList()">
+                <div id="parents-list" style="margin-top:20px;"></div>
+            </div>
+        </div>
+
+        <div id="fee-management-page" class="page">
+            <div class="card">
+                <div id="fee-split-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                    <div>
+                        <h4 style="color: var(--danger-color); border-bottom: 2px solid; padding-bottom:5px; margin-bottom:15px;">Ba su biya ba</h4>
+                        <div id="unpaid-list"></div>
+                    </div>
+                    <div>
+                        <h4 style="color: var(--success-color); border-bottom: 2px solid; padding-bottom:5px; margin-bottom:15px;">Masu biya</h4>
+                        <div id="paid-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="send-message-page" class="page">
+            <div class="card">
+                <h3>Aika wa Iyaye Saƙo</h3>
+                <div class="form-group">
+                    <label>Zaɓi Iyaye</label>
+                    <select id="msg-parent-select" class="form-control"></select>
+                </div>
+                <div class="form-group">
+                    <label>Saƙon Tunatarwa (Auto-Generated)</label>
+                    <textarea id="custom-message" rows="12" class="form-control"></textarea>
+                </div>
+                <button class="btn-primary" onclick="sendWhatsApp()"><i class="fab fa-whatsapp"></i> Aika yanzu</button>
+                <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+                <h4>Bulk Messaging</h4>
+                <button class="btn-bulk" onclick="startBulkSend()"><i class="fas fa-paper-plane"></i> Tura wa duka waɗanda ba su biya ba</button>
+                <div id="bulk-progress-container" style="display:none; margin-top:20px; background:#eee; border-radius:10px; height:20px; overflow:hidden;">
+                    <div id="bulk-progress-bar" style="background:var(--islamic-green); width:0%; height:100%; transition: width 0.4s ease;"></div>
+                </div>
+                <p id="bulk-status-text" style="text-align:center; font-size:0.85em; margin-top:5px; color:#666;"></p>
+            </div>
+        </div>
+
+        <div id="settings-page" class="page">
+            <div class="card">
+                <h3>Saitunan Makaranta & Banki</h3>
+                <div class="form-group"><label>Sunan Makaranta</label><input type="text" id="set-school-name" class="form-control"></div>
+                <div class="form-group"><label>Kuɗin Wata (Kowane Yaro)</label><input type="number" id="set-fee" class="form-control"></div>
+                <hr style="margin: 20px 0;">
+                <h4 style="margin-bottom:10px;">Bayanan Banki</h4>
+                <div class="form-group"><label>Sunan Banki</label><input type="text" id="set-bank-name" class="form-control"></div>
+                <div class="form-group"><label>Sunan Akanta</label><input type="text" id="set-acc-name" class="form-control"></div>
+                <div class="form-group"><label>Lambar Akanta</label><input type="text" id="set-acc-no" class="form-control"></div>
+                <button class="btn-primary" onclick="saveSettings()">Ajiye Saituna</button>
+            </div>
+        </div>
+    </div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDdmCzTeCGanK2l8XvTjraYlaIncjkpNf8",
+      authDomain: "islamiyyah-37f5d.firebaseapp.com",
+      projectId: "islamiyyah-37f5d",
+      storageBucket: "islamiyyah-37f5d.firebasestorage.app",
+      messagingSenderId: "993951666159",
+      appId: "1:993951666159:web:1fe081d2994c944fd8301a"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    window.parents = [];
+    window.settings = { schoolName: "Madrasatut Ta'alimun Nisa'i", feePerChild: 500, bankName: "", accName: "", accNo: "" };
+
+    onSnapshot(doc(db, "madrasa_data", "main"), (docSnap) => {
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            window.parents = data.parents || [];
+            window.settings = data.settings || window.settings;
+            refreshUI();
+        }
+    });
+
+    window.saveToCloud = async () => {
+        await setDoc(doc(db, "madrasa_data", "main"), {
+            parents: window.parents,
+            settings: window.settings
+        });
+    };
+
+    window.toggleSidebar = () => document.getElementById('sidebar').classList.toggle('active');
+
+    window.navigateTo = (pageId) => {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById(pageId + '-page').classList.add('active');
+        document.getElementById('current-page-title').textContent = pageId.charAt(0).toUpperCase() + pageId.slice(1).replace('-', ' ');
+        if (window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('active');
+        refreshUI();
+    };
+
+    window.addChild = async (e) => {
+        e.preventDefault();
+        const parentId = document.getElementById('parent-select').value;
+        const sName = document.getElementById('student-name').value;
+        const sClass = document.getElementById('class-name').value;
+        if (parentId === 'new') {
+            const pName = document.getElementById('new-parent-name').value;
+            let pPhone = document.getElementById('new-parent-phone').value;
+            pPhone = pPhone.startsWith('0') ? '234' + pPhone.slice(1) : pPhone;
+            window.parents.push({ id: 'p' + Date.now(), name: pName, phone: pPhone, hasPaid: false, children: [{ id: Date.now(), name: sName, class: sClass }] });
+        } else {
+            const idx = window.parents.findIndex(p => p.id === parentId);
+            window.parents[idx].children.push({ id: Date.now(), name: sName, class: sClass });
+        }
+        await window.saveToCloud();
+        document.getElementById('child-form').reset();
+        window.navigateTo('parents');
+    };
+
+    window.deleteParent = async (id) => {
+        if(confirm("Kana da tabbacin kana son goge wannan iyayen da duk yaransa?")) {
+            window.parents = window.parents.filter(p => p.id !== id);
+            await window.saveToCloud();
+        }
+    };
+
+    window.togglePayment = async (id) => {
+        const idx = window.parents.findIndex(p => p.id === id);
+        window.parents[idx].hasPaid = !window.parents[idx].hasPaid;
+        await window.saveToCloud();
+    };
+
+    window.showResetReport = () => {
+        const paid = window.parents.filter(p => p.hasPaid);
+        const unpaid = window.parents.filter(p => !p.hasPaid);
+        const totalMoney = paid.reduce((acc, p) => acc + (p.children.length * window.settings.feePerChild), 0);
+
+        let reportHtml = `<b>JIMILLA: ₦${totalMoney.toLocaleString()}</b><br><hr>`;
+        reportHtml += `<b style="color:green">MASU BIYA (${paid.length}):</b><br>`;
+        reportHtml += paid.length ? paid.map(p => `• ${p.name}`).join('<br>') : 'Babu';
+        reportHtml += `<br><br><b style="color:red">BA SU BIYA BA (${unpaid.length}):</b><br>`;
+        reportHtml += unpaid.length ? unpaid.map(p => `• ${p.name}`).join('<br>') : 'Babu';
+
+        document.getElementById('reset-report-content').innerHTML = reportHtml;
+        document.getElementById('reset-modal').style.display = 'block';
+    };
+
+    window.confirmStartNewMonth = async () => {
+        if(confirm("Tabbatar: Shin kana son mayar da kowa matsayin 'BAI BIYA BA' yanzu?")) {
+            window.parents = window.parents.map(p => ({ ...p, hasPaid: false }));
+            await window.saveToCloud();
+            closeResetModal();
+            alert("An fara sabon wata!");
+        }
+    };
+
+    window.closeResetModal = () => document.getElementById('reset-modal').style.display = 'none';
+
+    window.saveSettings = async () => {
+        window.settings.schoolName = document.getElementById('set-school-name').value;
+        window.settings.feePerChild = parseInt(document.getElementById('set-fee').value);
+        window.settings.bankName = document.getElementById('set-bank-name').value;
+        window.settings.accName = document.getElementById('set-acc-name').value;
+        window.settings.accNo = document.getElementById('set-acc-no').value;
+        await window.saveToCloud();
+        alert("An adana!");
+    };
+
+    function refreshUI() {
+        document.getElementById('badge-school-name').textContent = window.settings.schoolName;
+        const totalS = window.parents.reduce((acc, p) => acc + p.children.length, 0);
+        const paidP = window.parents.filter(p => p.hasPaid).length;
+        document.getElementById('stat-parents').textContent = window.parents.length;
+        document.getElementById('stat-students').textContent = totalS;
+        document.getElementById('stat-paid').textContent = `${paidP} / ${window.parents.length}`;
+        document.getElementById('stat-total-money').textContent = `₦${(totalS * window.settings.feePerChild).toLocaleString()}`;
+        renderDropdowns();
+        renderLists();
+    }
+
+    function renderDropdowns() {
+        const pSelect = document.getElementById('parent-select');
+        const mSelect = document.getElementById('msg-parent-select');
+        pSelect.innerHTML = `<option value="new">+ Sabon Iyaye</option>` + window.parents.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+        mSelect.innerHTML = '<option value="">-- Zaɓi Iyaye --</option>' + window.parents.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+    }
+
+    function renderLists() {
+        document.getElementById('quick-payment-list').innerHTML = window.parents.slice(0, 15).map(p => `
+            <div class="history-item">
+                <div><strong>${p.name}</strong></div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    ${p.hasPaid ? '<span class="paid-badge">Biya</span>' : '<span class="unpaid-badge">Bashi</span>'}
+                    <button onclick="togglePayment('${p.id}')" style="border:none; background:none; cursor:pointer;"><i class="fas fa-sync"></i></button>
+                    <button onclick="deleteParent('${p.id}')" style="color:var(--danger-color); border:none; background:none; cursor:pointer;"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>`).join('');
+
+        const unpaid = window.parents.filter(p => !p.hasPaid);
+        const paid = window.parents.filter(p => p.hasPaid);
+        document.getElementById('unpaid-list').innerHTML = unpaid.map(p => `<div class="history-item"><span>${p.name}</span><button class="btn-primary" onclick="togglePayment('${p.id}')">Biya</button></div>`).join('');
+        document.getElementById('paid-list').innerHTML = paid.map(p => `<div class="history-item"><span>${p.name}</span><button class="btn-secondary" onclick="togglePayment('${p.id}')">Soke</button></div>`).join('');
+        
+        const q = document.getElementById('search-input').value.toLowerCase();
+        document.getElementById('parents-list').innerHTML = window.parents.filter(p => p.name.toLowerCase().includes(q)).map(p => `<div class="card" style="padding:10px; margin-bottom:5px; display:flex; justify-content:space-between; align-items:center;"><span><strong>${p.name}</strong> (${p.phone})</span><button onclick="deleteParent('${p.id}')" style="color:var(--danger-color); border:none; background:none;"><i class="fas fa-trash"></i></button></div>`).join('');
+    }
+
+    window.generateAutoMessage = (p) => {
+        const childrenList = p.children.map(c => `• ${c.name} (${c.class})`).join('\n');
+        const total = p.children.length * window.settings.feePerChild;
+        let msg = `Assalamu alaikum\n\nIyalan Malam ${p.name}\n\nMuna tunatar da ku kudin makaranta na wannan watan\n\nDalibai:\n${childrenList}\n\nTotal: ₦${total.toLocaleString()}\n\n`;
+        if(window.settings.bankName && window.settings.accNo) msg += `Banki: ${window.settings.bankName}\nSuna: ${window.settings.accName}\nNo: ${window.settings.accNo}\n\n`;
+        msg += `Mungode.\n\n${window.settings.schoolName}`;
+        return msg;
+    };
+
+    window.sendWhatsApp = () => {
+        const p = window.parents.find(x => x.id === document.getElementById('msg-parent-select').value);
+        if(p) window.open(`https://wa.me/${p.phone}?text=${encodeURIComponent(document.getElementById('custom-message').value)}`, '_blank');
+    };
+
+    window.startBulkSend = async () => {
+        const debtors = window.parents.filter(p => !p.hasPaid);
+        if (debtors.length === 0 || !confirm(`Tura sakonni ga mutum ${debtors.length}?`)) return;
+        const container = document.getElementById('bulk-progress-container');
+        const progressBar = document.getElementById('bulk-progress-bar');
+        container.style.display = 'block';
+        for (let i = 0; i < debtors.length; i++) {
+            window.open(`https://wa.me/${debtors[i].phone}?text=${encodeURIComponent(window.generateAutoMessage(debtors[i]))}`, '_blank');
+            progressBar.style.width = ((i + 1) / debtors.length) * 100 + '%';
+            await new Promise(r => setTimeout(r, 4000));
+        }
+        container.style.display = 'none';
+        alert("An gama!");
+    };
+
+    window.toggleNewParentFields = () => {
+        document.getElementById('new-parent-fields').style.display = document.getElementById('parent-select').value === 'new' ? 'block' : 'none';
+    };
+
+    document.getElementById('msg-parent-select').onchange = function() {
+        const p = window.parents.find(x => x.id === this.value);
+        if(p) document.getElementById('custom-message').value = window.generateAutoMessage(p);
+    };
+    
+    window.renderParentsList = () => refreshUI();
+</script>
+</body>
+</html>
